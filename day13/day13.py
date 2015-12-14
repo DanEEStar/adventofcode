@@ -7,58 +7,45 @@ Dist = namedtuple('Dist', ('a', 'b', 'dist'))
 
 
 def values_from_line(line):
-    m = re.match('([A-Z]\w+) would (gain|lose) (\d+) .* next to ([A-Z]\w+)', line)
-    person1 = m.group(1)
-    person2 = m.group(4)
-    value = 0
-    gain_lose = m.group(2)
-    if gain_lose == 'gain':
-        value = int(m.group(3))
-    else:
-        value = -int(m.group(3))
+    # Vixen can fly 8 km/s for 8 seconds, but then must rest for 53 seconds.
+    m = re.match('([A-Z]\w+) can fly (\d+) km/s for (\d+) seconds, .* (\d+) seconds.', line)
+    deer = m.group(1)
+    speed = int(m.group(2))
+    duration = int(m.group(3))
+    rest = int(m.group(4))
 
-    return person1, person2, value
+    return deer, speed, duration, rest
 
 
-def calc_table_setting_value(values, table_setting):
-    value = 0
-    neighbours = zip(table_setting, table_setting[1:])
-    neighbours.append((table_setting[-1], table_setting[0]))
-    for persons in neighbours:
-        value += values[(persons[0], persons[1])]
-        value += values[(persons[1], persons[0])]
+def distance_from_seconds(reindeer, seconds):
+    r = seconds % (reindeer[2] + reindeer[3])
+    v = seconds / (reindeer[2] + reindeer[3])
 
-    return value
+    d = v * reindeer[1] * reindeer[2] + min(r, reindeer[2]) * reindeer[1]
+
+    return d
 
 
 def main():
     with open('input.txt') as input:
-        values = dict()
-        persons = set()
-
+        reindeers = []
+        score = {}
         for line in input:
-            v = values_from_line(line)
-            values[(v[0], v[1])] = v[2]
-            persons.add(v[0])
+            r = values_from_line(line)
+            reindeers.append(r)
+            score[r[0]] = 0
 
-        for person in persons:
-            values[(person, 'Daniel')] = 0
-            values[('Daniel', person)] = 0
-        persons.add('Daniel')
+        for x in range(1, 2504):
+            d = 0
+            m = None
+            for r in reindeers:
+                n = distance_from_seconds(r, x)
+                if n > d:
+                    m = r[0]
+                    d = n
+            score[m] += 1
 
-        print(values)
-        print(persons)
-
-        table_settings = itertools.permutations(persons)
-        happiness = 0
-
-        for table_setting in table_settings:
-            print(table_setting)
-            h = calc_table_setting_value(values, table_setting)
-            print(h)
-            happiness = max(h, happiness)
-
-        print(happiness)
+    print(score)
 
 
 if __name__ == '__main__':
