@@ -1,33 +1,26 @@
 import unittest
 
-from day13 import values_from_line, distance_from_seconds
+from day13 import values_from_line
 
 
-class BlaTestCase(unittest.TestCase):
+class ValuesFromLineTestCase(unittest.TestCase):
     def test_line1(self):
-        line1 = 'Vixen can fly 8 km/s for 8 seconds, but then must rest for 53 seconds.'
+        line1 = 'Carol would lose 62 happiness units by sitting next to Alice.'
         output = values_from_line(line1)
 
-        self.assertEqual(('Vixen', 8, 8, 53), output)
+        self.assertEqual(('Carol', 'Alice', -62), output)
 
-    def tes_dist_from_seconds(self):
-        line1 = 'Comet can fly 14 km/s for 10 seconds, but then must rest for 127 seconds.'
+    def test_line2(self):
+        line1 = 'David would lose 7 happiness units by sitting next to Bob.'
         output = values_from_line(line1)
 
-        self.assertEqual(distance_from_seconds(output, 1), 14)
+        self.assertEqual(('David', 'Bob', -7), output)
 
-    def tes_dist_from_seconds2(self):
-        line1 = 'Comet can fly 14 km/s for 10 seconds, but then must rest for 127 seconds.'
+    def test_line3(self):
+        line1 = 'Bob would gain 83 happiness units by sitting next to Alice.'
         output = values_from_line(line1)
 
-        self.assertEqual(distance_from_seconds(output, 10), 140)
-
-    def test_dist_from_seconds2(self):
-        line1 = 'Comet can fly 14 km/s for 10 seconds, but then must rest for 127 seconds.'
-        output = values_from_line(line1)
-
-        self.assertEqual(distance_from_seconds(output, 1000), 1120)
-
+        self.assertEqual(('Bob', 'Alice', 83), output)
 
 
 if __name__ == "__main__":
