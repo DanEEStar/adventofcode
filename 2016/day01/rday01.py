@@ -1,28 +1,7 @@
 import math
 
 
-def intersect(s1, e1, s2, e2):
-    """
-    returns intersection point of vertical and horizontal line
-    :param s1: startpoint tuple
-    :param e1: endpoint tuple
-    :param s2: startpoint tuple
-    :param e2: endpoint tuple
-    :return: intersection point or None
-    """
-    if abs(s1[0]) == abs(e1[0]) and abs(s2[1]) == abs(e2[1]):
-        if min(s2[0], e2[0]) < min(s1[0], e1[0]) and max(s2[0], e2[0]) > max(s1[0], e1[0]) and \
-                        min(s1[1], e1[1]) < min(s2[1], e2[1]) and max(s1[1], e1[1]) > max(s2[1], e2[1]):
-            return (s1[0], s2[1])
-    if abs(s1[1]) == abs(e1[1]) and abs(s2[0]) == abs(e2[0]):
-        # intersect((2, 1), (6, 1), (8, 0), (8, 3)))
-        if min(s2[1], e2[1]) < min(s1[1], e1[1]) and max(s2[1], e2[1]) > max(s1[1], e1[1]) and \
-                        min(s1[0], e1[0]) < min(s2[0], e2[0]) and max(s1[0], e1[0]) > max(s2[0], e2[0]):
-            return (s2[0], s1[1])
-    return None
-
-
-def intersectLines( pt1, pt2, ptA, ptB ):
+def intersect_lines(pt1, pt2, ptA, ptB):
     """ this returns the intersection of Line(pt1,pt2) and Line(ptA,ptB)
 
         returns a tuple: (xi, yi, valid, r, s), where
@@ -108,15 +87,14 @@ def main():
             print(pos)
 
             for line in lines:
-                intersection = intersect(line[0], line[1], (posstart.real, posstart.imag), (pos.real, pos.imag))
-                i2 = intersectLines(line[0], line[1], (posstart.real, posstart.imag), (pos.real, pos.imag))
+                i2 = intersect_lines(line[0], line[1], (posstart.real, posstart.imag), (pos.real, pos.imag))
                 print(i2)
-                if intersection:
+                if i2[2]:
                     print('----------- finished:')
                     print(line)
                     print(posstart, pos)
-                    print(intersection)
-                    print(intersection[0] + intersection[1])
+                    print(i2)
+                    print(i2[0] + i2[1])
                     return
 
             lines.append((complex_to_tuple(posstart), complex_to_tuple(pos)))
