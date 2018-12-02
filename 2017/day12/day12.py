@@ -5,6 +5,8 @@ from collections import defaultdict, namedtuple
 from heapq import heappop, heappush
 from itertools import combinations, islice
 
+import networkx as nx
+
 
 def Input(day):
     "Open this day's input file."
@@ -101,76 +103,56 @@ def Path(previous, s):
     return ([] if (s is None) else Path(previous, previous[s]) + [s])
 
 
-Node = namedtuple('Node', ['name', 'weight', 'children'])
+Node = namedtuple('Node', ['name', 'children'])
 
 
 class TreeNode:
-    def __init__(self, name, weight):
+    def __init__(self, name, parent):
         self.name = name
-        self.weight = weight
+        self.parent = parent
         self.children = []
 
-    def total_weight(self):
-        return self.weight + sum([c.total_weight() for c in self.children])
-
-    def print_children_weight(self):
-        for c in self.children:
-            print(c.total_weight())
-
-    def get_unbalanced_node(self):
-        children_weights = [w.total_weight() for w in self.children]
-        if not all(x == children_weights[0] for x in children_weights):
-            print(children_weights)
-            print([p.weight for p in self.children])
-
-        for c in self.children:
-            c.get_unbalanced_node()
 
 nodes = {}
+tree_nodes = {}
+visited = set()
 
 
 def main():
+
+    print(cityblock_distance((1,2), (8,6)))
+
     with open('input.txt') as input:
         lines = input.read().split('\n')
 
-        p = re.compile(r'(\w+) \((\d+)\)( -> (.*))?')
+        test = '''0 <-> 2
+1 <-> 1
+2 <-> 0, 3, 4
+3 <-> 2, 4
+4 <-> 2, 3, 6
+5 <-> 6
+6 <-> 4, 5'''
 
-        d = {}
-        all_children = set()
+        #lines = test.split('\n')
+
+        p = re.compile(r'(\d+) <-> (.*)')
+
+        graph = nx.Graph()
 
         for line in lines:
-            r = p.match(line)
-            (name, weight, _, children) = r.groups()
-            children = [pa.strip() for pa in children.split(',')] if children else None
-            weight = int(weight)
+            result = p.match(line)
+            print(line)
+            (node, children) = result.groups()
+            children = [ch.strip() for ch in children.split(',')]
 
-            node = Node(name, weight, children)
-            nodes[name] = node
+            for child in children:
+                graph.add_edge(node, child)
 
-            if children:
-                all_children.update(children)
-                d[name] = children
-
-        root = (d.keys() - all_children).pop()
-        print(root)
-
-        root_node = nodes[root]
-        print(root_node)
-
-        tree_root = add_child_nodes(root_node)
-
-        print(tree_root)
-        print(tree_root.total_weight())
-
-        tree_root.get_unbalanced_node()
-
-
-def add_child_nodes(node):
-    r = TreeNode(node.name, node.weight)
-    if node.children:
-        for node_name in node.children:
-            r.children.append(add_child_nodes(nodes[node_name]))
-    return r
+        #print(graph.edges)
+        #print(list(nx.connected_components(graph)))
+        print(list(nx.all_neighbors(graph, '0')))
+        print(len(list(nx.single_source_shortest_path(graph, '0'))))
+        print(len(list(nx.connected_components(graph))))
 
 
 if __name__ == '__main__':

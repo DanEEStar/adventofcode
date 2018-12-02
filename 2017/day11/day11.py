@@ -1,7 +1,7 @@
 import math
 import re
 import urllib.request
-from collections import defaultdict, namedtuple
+from collections import defaultdict
 from heapq import heappop, heappush
 from itertools import combinations, islice
 
@@ -101,77 +101,68 @@ def Path(previous, s):
     return ([] if (s is None) else Path(previous, previous[s]) + [s])
 
 
-Node = namedtuple('Node', ['name', 'weight', 'children'])
+def cube_distance(a, b):
+    return max(abs(a[0] - b[0]), abs(a[1] - b[1]), abs(a[2] - b[2]))
 
 
-class TreeNode:
-    def __init__(self, name, weight):
-        self.name = name
-        self.weight = weight
-        self.children = []
+def offset_to_cube(hex):
+    x = hex[0]
+    z = hex[1] - (hex[0] - (hex[0]&1)) / 2
+    y = -x-z
+    return x, y, z
 
-    def total_weight(self):
-        return self.weight + sum([c.total_weight() for c in self.children])
 
-    def print_children_weight(self):
-        for c in self.children:
-            print(c.total_weight())
-
-    def get_unbalanced_node(self):
-        children_weights = [w.total_weight() for w in self.children]
-        if not all(x == children_weights[0] for x in children_weights):
-            print(children_weights)
-            print([p.weight for p in self.children])
-
-        for c in self.children:
-            c.get_unbalanced_node()
-
-nodes = {}
+def offset_distance(a, b):
+    ac = offset_to_cube(a)
+    bc = offset_to_cube(b)
+    return cube_distance(ac, bc)
 
 
 def main():
+
     with open('input.txt') as input:
-        lines = input.read().split('\n')
 
-        p = re.compile(r'(\w+) \((\d+)\)( -> (.*))?')
+        input = input.read().split(',')
 
-        d = {}
-        all_children = set()
+        #input = 'se,sw,se,sw,sw'.split(',')
 
-        for line in lines:
-            r = p.match(line)
-            (name, weight, _, children) = r.groups()
-            children = [pa.strip() for pa in children.split(',')] if children else None
-            weight = int(weight)
+        pos = (0, 0)
 
-            node = Node(name, weight, children)
-            nodes[name] = node
+        m = 0
 
-            if children:
-                all_children.update(children)
-                d[name] = children
+        for d in input:
+            if d == 'n':
+                pos = (pos[0], pos[1]-1)
+            elif d == 's':
+                pos = (pos[0], pos[1]+1)
+            if pos[0] % 2 == 0:
+                if d == 'nw':
+                    pos = (pos[0]-1, pos[1]-1)
+                elif d == 'ne':
+                    pos = (pos[0]+1, pos[1]-1)
+                elif d == 'sw':
+                    pos = (pos[0]-1, pos[1])
+                elif d == 'se':
+                    pos = (pos[0]+1, pos[1])
+            else:
+                if d == 'nw':
+                    pos = (pos[0]-1, pos[1])
+                elif d == 'ne':
+                    pos = (pos[0]+1, pos[1])
+                elif d == 'sw':
+                    pos = (pos[0]-1, pos[1]+1)
+                elif d == 'se':
+                    pos = (pos[0]+1, pos[1]+1)
 
-        root = (d.keys() - all_children).pop()
-        print(root)
+            dist = offset_distance((0, 0), pos)
 
-        root_node = nodes[root]
-        print(root_node)
-
-        tree_root = add_child_nodes(root_node)
-
-        print(tree_root)
-        print(tree_root.total_weight())
-
-        tree_root.get_unbalanced_node()
+            m = max(dist, m)
 
 
-def add_child_nodes(node):
-    r = TreeNode(node.name, node.weight)
-    if node.children:
-        for node_name in node.children:
-            r.children.append(add_child_nodes(nodes[node_name]))
-    return r
-
+        print(pos)
+        print(offset_to_cube(pos))
+        print(offset_distance((0, 0), pos))
+        print(m)
 
 if __name__ == '__main__':
     main()

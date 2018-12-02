@@ -101,76 +101,89 @@ def Path(previous, s):
     return ([] if (s is None) else Path(previous, previous[s]) + [s])
 
 
-Node = namedtuple('Node', ['name', 'weight', 'children'])
+Node = namedtuple('Node', ['name', 'children'])
 
 
 class TreeNode:
-    def __init__(self, name, weight):
+    def __init__(self, name, parent):
         self.name = name
-        self.weight = weight
+        self.parent = parent
         self.children = []
 
-    def total_weight(self):
-        return self.weight + sum([c.total_weight() for c in self.children])
-
-    def print_children_weight(self):
-        for c in self.children:
-            print(c.total_weight())
-
-    def get_unbalanced_node(self):
-        children_weights = [w.total_weight() for w in self.children]
-        if not all(x == children_weights[0] for x in children_weights):
-            print(children_weights)
-            print([p.weight for p in self.children])
-
-        for c in self.children:
-            c.get_unbalanced_node()
 
 nodes = {}
+tree_nodes = {}
+visited = set()
 
 
 def main():
+
     with open('input.txt') as input:
         lines = input.read().split('\n')
 
-        p = re.compile(r'(\w+) \((\d+)\)( -> (.*))?')
+        test = '''     |          
+     |  +--+    
+     A  |  C    
+ F---|----E|--+ 
+     |  |  |  D 
+     +B-+  +--+ 
+                
+'''
 
-        d = {}
-        all_children = set()
+        #lines = test.split('\n')
+
+        c = []
 
         for line in lines:
-            r = p.match(line)
-            (name, weight, _, children) = r.groups()
-            children = [pa.strip() for pa in children.split(',')] if children else None
-            weight = int(weight)
+            d = []
+            for x in line:
+                d.append(x)
+            c.append(d)
 
-            node = Node(name, weight, children)
-            nodes[name] = node
+        pos = (0, c[0].index('|'))
+        dir = (1, 0)
 
-            if children:
-                all_children.update(children)
-                d[name] = children
+        p = re.compile(r'(\+|\||-|[A-Z])')
+        p2 = re.compile(r'[A-Z]')
 
-        root = (d.keys() - all_children).pop()
-        print(root)
+        next = c[pos[0] + dir[0]][pos[1] + dir[1]]
 
-        root_node = nodes[root]
-        print(root_node)
+        sol = ''
+        steps = 0
 
-        tree_root = add_child_nodes(root_node)
+        while True:
+            pos = (pos[0] + dir[0], pos[1] + dir[1])
+            next = c[pos[0]][pos[1]]
 
-        print(tree_root)
-        print(tree_root.total_weight())
+            steps += 1
 
-        tree_root.get_unbalanced_node()
+            #print(pos,next)
+
+            if p2.match(next):
+                if next in 'FT':
+                    break
+                sol += next
+                print(sol)
+
+            if len(sol) >= 26:
+                break
+
+            if next == '+':
+                if p.match(c[pos[0]][pos[1]+1]) and dir != (0, -1):
+                    dir = (0, 1)
+                elif p.match(c[pos[0]+1][pos[1]]) and dir != (-1, 0):
+                    dir = (1, 0)
+                elif p.match(c[pos[0]][pos[1]-1]) and dir != (0, 1):
+                    dir = (0, -1)
+                elif p.match(c[pos[0]-1][pos[1]]) and dir != (1, 0):
+                    dir = (-1, 0)
+                else:
+                    break
+
+        print(sol)
+        print(steps)
 
 
-def add_child_nodes(node):
-    r = TreeNode(node.name, node.weight)
-    if node.children:
-        for node_name in node.children:
-            r.children.append(add_child_nodes(nodes[node_name]))
-    return r
 
 
 if __name__ == '__main__':

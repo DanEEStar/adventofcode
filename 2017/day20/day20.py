@@ -1,9 +1,9 @@
 import math
 import re
 import urllib.request
-from collections import defaultdict, namedtuple
+from collections import namedtuple
 from heapq import heappop, heappush
-from itertools import combinations, islice
+from itertools import combinations, islice, groupby
 
 
 def Input(day):
@@ -33,13 +33,6 @@ def grep(pattern, lines):
     for line in lines:
         if re.search(pattern, line):
             print(line)
-
-def groupby(iterable, key=lambda it: it):
-    "Return a dic whose keys are key(it) and whose values are all the elements of iterable with that key."
-    dic = defaultdict(list)
-    for it in iterable:
-        dic[key(it)].append(it)
-    return dic
 
 def powerset(iterable):
     "Yield all subsets of items."
@@ -101,76 +94,79 @@ def Path(previous, s):
     return ([] if (s is None) else Path(previous, previous[s]) + [s])
 
 
-Node = namedtuple('Node', ['name', 'weight', 'children'])
+Node = namedtuple('Node', ['name', 'children'])
 
 
 class TreeNode:
-    def __init__(self, name, weight):
+    def __init__(self, name, parent):
         self.name = name
-        self.weight = weight
+        self.parent = parent
         self.children = []
 
-    def total_weight(self):
-        return self.weight + sum([c.total_weight() for c in self.children])
-
-    def print_children_weight(self):
-        for c in self.children:
-            print(c.total_weight())
-
-    def get_unbalanced_node(self):
-        children_weights = [w.total_weight() for w in self.children]
-        if not all(x == children_weights[0] for x in children_weights):
-            print(children_weights)
-            print([p.weight for p in self.children])
-
-        for c in self.children:
-            c.get_unbalanced_node()
 
 nodes = {}
+tree_nodes = {}
+visited = set()
+
+def cd3(p, q=(0, 0, 0)):
+    return abs(X(p) - X(q)) + abs(Y(p) - Y(q)) + abs(p[2] - q[2])
 
 
 def main():
+
     with open('input.txt') as input:
         lines = input.read().split('\n')
 
-        p = re.compile(r'(\w+) \((\d+)\)( -> (.*))?')
+        test = '''p=<-6,0,0>, v=< 3,0,0>, a=< 0,0,0>    
+p=<-4,0,0>, v=< 2,0,0>, a=< 0,0,0>
+p=<-2,0,0>, v=< 1,0,0>, a=< 0,0,0>
+p=< 3,0,0>, v=<-1,0,0>, a=< 0,0,0>'''
 
-        d = {}
-        all_children = set()
+        #lines = test.split('\n')
 
-        for line in lines:
-            r = p.match(line)
-            (name, weight, _, children) = r.groups()
-            children = [pa.strip() for pa in children.split(',')] if children else None
-            weight = int(weight)
+        p = re.compile(r'p=<(.*?)>, v=<(.*?)>, a=<(.*?)>')
 
-            node = Node(name, weight, children)
-            nodes[name] = node
+        parts = []
 
-            if children:
-                all_children.update(children)
-                d[name] = children
+        m = 10000000
+        result = -1
 
-        root = (d.keys() - all_children).pop()
-        print(root)
+        for index, line in enumerate(lines):
+            result = p.match(line)
 
-        root_node = nodes[root]
-        print(root_node)
+            pos = [int(i.strip()) for i in result.groups()[0].split(',')]
+            v = [int(i.strip()) for i in result.groups()[1].split(',')]
+            a = [int(i.strip()) for i in result.groups()[2].split(',')]
 
-        tree_root = add_child_nodes(root_node)
+            parts.append((pos, v, a, [index, True]))
 
-        print(tree_root)
-        print(tree_root.total_weight())
+        for x in range(1000):
+            for i, part in enumerate(parts):
+                #print(parts)
+                if parts[3][1]:
+                    part[1][0] += part[2][0]
+                    part[1][1] += part[2][1]
+                    part[1][2] += part[2][2]
 
-        tree_root.get_unbalanced_node()
+                    part[0][0] += part[1][0]
+                    part[0][1] += part[1][1]
+                    part[0][2] += part[1][2]
 
+            for k, g in groupby(parts, lambda z: z[0]):
+                g = list(g)
+                if len(g) > 1:
+                    for part in g:
+                        part[3][1] = False
 
-def add_child_nodes(node):
-    r = TreeNode(node.name, node.weight)
-    if node.children:
-        for node_name in node.children:
-            r.children.append(add_child_nodes(nodes[node_name]))
-    return r
+        for i, part in enumerate(parts):
+            n = cd3(part[0])
+            if n < m:
+                m = n
+                result = i
+
+        living = [part for part in parts if part[3][1]]
+
+        print(len(living))
 
 
 if __name__ == '__main__':

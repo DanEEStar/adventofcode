@@ -1,7 +1,7 @@
 import math
 import re
 import urllib.request
-from collections import defaultdict, namedtuple
+from collections import defaultdict
 from heapq import heappop, heappush
 from itertools import combinations, islice
 
@@ -101,76 +101,54 @@ def Path(previous, s):
     return ([] if (s is None) else Path(previous, previous[s]) + [s])
 
 
-Node = namedtuple('Node', ['name', 'weight', 'children'])
-
-
-class TreeNode:
-    def __init__(self, name, weight):
-        self.name = name
-        self.weight = weight
-        self.children = []
-
-    def total_weight(self):
-        return self.weight + sum([c.total_weight() for c in self.children])
-
-    def print_children_weight(self):
-        for c in self.children:
-            print(c.total_weight())
-
-    def get_unbalanced_node(self):
-        children_weights = [w.total_weight() for w in self.children]
-        if not all(x == children_weights[0] for x in children_weights):
-            print(children_weights)
-            print([p.weight for p in self.children])
-
-        for c in self.children:
-            c.get_unbalanced_node()
-
-nodes = {}
-
-
 def main():
+
+    print(cityblock_distance((1,2), (8,6)))
+
     with open('input.txt') as input:
-        lines = input.read().split('\n')
+        input = input.read()
 
-        p = re.compile(r'(\w+) \((\d+)\)( -> (.*))?')
+        #input = '{{<a!>},{<a!>},{<a!>},{<ab>}}'
+        #input = '{{{}}}'
+        #input = '{{<ab>},{<ab>},{<ab>},{<ab>}}'
+        #input = '{{<!!>},{<!!>},{<!!>},{<!!>}}'
+        #input = '<{o"i!a,<{i<a>'
+        print(input)
+        ignore_next = False
+        in_garbage = False
 
-        d = {}
-        all_children = set()
+        group_level = 0
+        groups = 0
+        garbage_count = 0
 
-        for line in lines:
-            r = p.match(line)
-            (name, weight, _, children) = r.groups()
-            children = [pa.strip() for pa in children.split(',')] if children else None
-            weight = int(weight)
+        for ch in input:
+            if ignore_next:
+                ignore_next = False
+                continue
 
-            node = Node(name, weight, children)
-            nodes[name] = node
+            if ch == '!':
+                ignore_next = True
+                continue
 
-            if children:
-                all_children.update(children)
-                d[name] = children
+            if in_garbage:
+                if ch == '>':
+                    in_garbage = False
+                else:
+                    garbage_count += 1
 
-        root = (d.keys() - all_children).pop()
-        print(root)
+            if ch == '<':
+                in_garbage = True
 
-        root_node = nodes[root]
-        print(root_node)
-
-        tree_root = add_child_nodes(root_node)
-
-        print(tree_root)
-        print(tree_root.total_weight())
-
-        tree_root.get_unbalanced_node()
+            if not in_garbage:
+                if ch == '{':
+                    group_level += 1
+                    groups += group_level
+                elif ch == '}':
+                    group_level -= 1
 
 
-def add_child_nodes(node):
-    r = TreeNode(node.name, node.weight)
-    if node.children:
-        for node_name in node.children:
-            r.children.append(add_child_nodes(nodes[node_name]))
-    return r
+        print(groups)
+        print(garbage_count)
 
 
 if __name__ == '__main__':

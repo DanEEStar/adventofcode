@@ -101,76 +101,94 @@ def Path(previous, s):
     return ([] if (s is None) else Path(previous, previous[s]) + [s])
 
 
-Node = namedtuple('Node', ['name', 'weight', 'children'])
+Node = namedtuple('Node', ['name', 'children'])
 
 
 class TreeNode:
-    def __init__(self, name, weight):
+    def __init__(self, name, parent):
         self.name = name
-        self.weight = weight
+        self.parent = parent
         self.children = []
 
-    def total_weight(self):
-        return self.weight + sum([c.total_weight() for c in self.children])
-
-    def print_children_weight(self):
-        for c in self.children:
-            print(c.total_weight())
-
-    def get_unbalanced_node(self):
-        children_weights = [w.total_weight() for w in self.children]
-        if not all(x == children_weights[0] for x in children_weights):
-            print(children_weights)
-            print([p.weight for p in self.children])
-
-        for c in self.children:
-            c.get_unbalanced_node()
 
 nodes = {}
+tree_nodes = {}
+visited = set()
+
+def solve(steps):
+    things = [n for n in 'abcdefghijklmnop']
+    seen = []
+    for i in range(1000000000):
+        h = tuple(things)
+        if h in seen:
+            return ''.join(seen[1000000000 % len(seen)])
+        seen += [h]
+        for step in steps:
+            if step[0] == 's':
+                node = int(step[1:])
+                things = things[-node:] + things[:-node]
+            if step[0] == 'x':
+                n1, n2 = list(map(int, step[1:].split('/')))
+                things[n1], things[n2] = things[n2], things[n1]
+            if step[0] == 'p':
+                n1, n2 = step[1:].split('/')
+                d1, d2 = things.index(n1), things.index(n2)
+                things[d1], things[d2] = n2, n1
+    return ''.join(things)
+
 
 
 def main():
+
     with open('input.txt') as input:
-        lines = input.read().split('\n')
+        moves = input.read().split(',')
 
-        p = re.compile(r'(\w+) \((\d+)\)( -> (.*))?')
+        #moves = ['s1', 'x3/4', 'pe/b']
 
-        d = {}
-        all_children = set()
+        #print(moves)
 
-        for line in lines:
-            r = p.match(line)
-            (name, weight, _, children) = r.groups()
-            children = [pa.strip() for pa in children.split(',')] if children else None
-            weight = int(weight)
+        programs = [chr(letter) for letter in range(97, 97+16)]
+        #programs = ['a', 'b', 'c', 'd', 'e', ]
+        #print(programs)
 
-            node = Node(name, weight, children)
-            nodes[name] = node
+        seen = []
 
-            if children:
-                all_children.update(children)
-                d[name] = children
+        steps = 1000000000
 
-        root = (d.keys() - all_children).pop()
-        print(root)
+        for x in range(steps):
+            #print(x)
+            for m in moves:
+                if m.startswith('s'):
+                    s = int(m[1:])
+                    programs = programs[-s:] + programs[:-s]
+                if m.startswith('x'):
+                    (p1, p2) = [int(s) for s in m[1:].split('/')]
+                    a = programs[p1]
+                    b = programs[p2]
+                    programs[p2] = a
+                    programs[p1] = b
+                if m.startswith('p'):
+                    (p1, p2) = m[1:].split('/')
+                    i1 = programs.index(p1)
+                    i2 = programs.index(p2)
+                    a = programs[i1]
+                    b = programs[i2]
+                    programs[i2] = a
+                    programs[i1] = b
 
-        root_node = nodes[root]
-        print(root_node)
+            s = ''.join(programs)
+            print(x, s)
+            if s in seen:
+                print('already found!')
+                print(seen[steps % len(seen)])
+                break
+            else:
+                seen.append(s)
 
-        tree_root = add_child_nodes(root_node)
 
-        print(tree_root)
-        print(tree_root.total_weight())
-
-        tree_root.get_unbalanced_node()
+        print(solve(moves))
 
 
-def add_child_nodes(node):
-    r = TreeNode(node.name, node.weight)
-    if node.children:
-        for node_name in node.children:
-            r.children.append(add_child_nodes(nodes[node_name]))
-    return r
 
 
 if __name__ == '__main__':

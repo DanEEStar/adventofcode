@@ -1,7 +1,7 @@
 import math
 import re
 import urllib.request
-from collections import defaultdict, namedtuple
+from collections import defaultdict
 from heapq import heappop, heappush
 from itertools import combinations, islice
 
@@ -101,76 +101,52 @@ def Path(previous, s):
     return ([] if (s is None) else Path(previous, previous[s]) + [s])
 
 
-Node = namedtuple('Node', ['name', 'weight', 'children'])
-
-
-class TreeNode:
-    def __init__(self, name, weight):
-        self.name = name
-        self.weight = weight
-        self.children = []
-
-    def total_weight(self):
-        return self.weight + sum([c.total_weight() for c in self.children])
-
-    def print_children_weight(self):
-        for c in self.children:
-            print(c.total_weight())
-
-    def get_unbalanced_node(self):
-        children_weights = [w.total_weight() for w in self.children]
-        if not all(x == children_weights[0] for x in children_weights):
-            print(children_weights)
-            print([p.weight for p in self.children])
-
-        for c in self.children:
-            c.get_unbalanced_node()
-
-nodes = {}
-
-
 def main():
+
+    print(cityblock_distance((1,2), (8,6)))
+
     with open('input.txt') as input:
         lines = input.read().split('\n')
 
-        p = re.compile(r'(\w+) \((\d+)\)( -> (.*))?')
+        '''
+        b inc 5 if a > 1
+a inc 1 if b < 5
+c dec -10 if a >= 1
+c inc -20 if c == 10
+        '''
 
-        d = {}
-        all_children = set()
+        m = 0
+
+        p = re.compile(r'(\w+) (\w+) (-?\d+) if (\w+) (.*)')
+
+        vars = defaultdict(int)
 
         for line in lines:
-            r = p.match(line)
-            (name, weight, _, children) = r.groups()
-            children = [pa.strip() for pa in children.split(',')] if children else None
-            weight = int(weight)
+            result = p.match(line)
+            print(result.groups())
+            (register, instr, value, var, command) = result.groups()
+            value = int(value)
 
-            node = Node(name, weight, children)
-            nodes[name] = node
+            vars[register] = 0 if not register in vars else vars[register]
+            var_command = 'vars["{}"]{}'.format(var, command)
 
-            if children:
-                all_children.update(children)
-                d[name] = children
+            m = max(max(vars.values()), m)
 
-        root = (d.keys() - all_children).pop()
-        print(root)
-
-        root_node = nodes[root]
-        print(root_node)
-
-        tree_root = add_child_nodes(root_node)
-
-        print(tree_root)
-        print(tree_root.total_weight())
-
-        tree_root.get_unbalanced_node()
+            if eval(var_command):
+                if instr == 'inc':
+                    vars[register] += value
+                elif instr == 'dec':
+                    vars[register] -= value
+                else:
+                    print('unknown command: ' + instr)
 
 
-def add_child_nodes(node):
-    r = TreeNode(node.name, node.weight)
-    if node.children:
-        for node_name in node.children:
-            r.children.append(add_child_nodes(nodes[node_name]))
-    return r
+        print(vars)
+        print(max(vars.values()))
+        print(m)
+
+
+
 
 
 if __name__ == '__main__':
