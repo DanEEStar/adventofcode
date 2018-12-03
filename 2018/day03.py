@@ -9,6 +9,12 @@ def parse_line(line):
     return int(num), int(x), int(y), int(w), int(h)
 
 
+def parse_line_ints(line):
+    r = r'-?(\d+)'
+    result = [int(x) for x in re.findall(r, line)]
+    return result
+
+
 def main():
     with open('day03.txt') as input:
         lines = input.read().split('\n')
@@ -17,14 +23,14 @@ def main():
         grid = np.zeros(shape=(10000, 10000), dtype=(int, 2))
 
         for line in lines:
-            (num, x, y, w, h) = parse_line(line)
+            (num, x, y, w, h) = parse_line_ints(line)
             for i in range(x, w+x):
                 for j in range(y, h+y):
                     grid[i, j][0] += num
                     grid[i, j][1] = num
 
         for line in lines:
-            (num, x, y, w, h) = parse_line(line)
+            (num, x, y, w, h) = parse_line_ints(line)
             ge = list(grid[x:w+x, y:h+y].flatten())
             if ge.count(ge[0]) == len(ge):
                 print(num)
