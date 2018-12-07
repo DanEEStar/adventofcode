@@ -56,11 +56,6 @@ def main():
     with open('day05.txt') as input:
         line = input.read().strip()
 
-        #line = 'dabAcCaCBAcCcaDA'
-
-        #print(line)
-
-
         #print(chr_lower)
         #print(chr_upper)
 
