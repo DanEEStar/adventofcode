@@ -1,0 +1,8 @@
+Step E must be finished before step H can begin.
+Step Y must be finished before step T can begin.
+Step F must be finished before step S can begin.
+Step U must be finished before step K can begin.
+Step X must be finished before step Z can begin.
+Step Q must be finished before step W can begin.
+Step W must be finished before step O can begin.
+Step G must be finished before step A can begin.
