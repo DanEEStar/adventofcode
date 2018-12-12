@@ -10,8 +10,11 @@ def main():
 
         sum = 0
         for number in cycle(lines):
+            print(number)
+            print(len(visited))
             sum += int(number)
             if sum in visited:
+                print(len(visited))
                 print(sum)
                 break
             visited.add(sum)

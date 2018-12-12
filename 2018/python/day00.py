@@ -39,7 +39,7 @@ def main():
     p = (51, 42)
     # print(X(p))
 
-    with open('day08.txt') as input:
+    with open('dayxx.txt') as input:
         part1(input)
 
 
