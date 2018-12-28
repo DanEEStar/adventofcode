@@ -2,7 +2,20 @@
 'use strict';
 
 var Fs = require("fs");
+var Belt_Array = require("bs-platform/lib/js/belt_Array.js");
 
-console.log(Fs.readFileSync("day01.txt", "utf8"));
+function readInputLines(fileName) {
+  return Fs.readFileSync(fileName, "utf8").split("\n");
+}
 
-/*  Not a pure module */
+var result = Belt_Array.reduce(Belt_Array.map(Fs.readFileSync("day01.txt", "utf8").split("\n"), (function (prim) {
+            return Number(prim);
+          })), 0.0, (function (prim, prim$1) {
+        return prim + prim$1;
+      }));
+
+console.log(result);
+
+exports.readInputLines = readInputLines;
+exports.result = result;
+/* result Not a pure module */
