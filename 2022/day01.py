@@ -1,38 +1,19 @@
-
-def part1(lines):
-    result = 0
-    current = 0
-
-    for line in lines:
-        if line:
-            current += int(line)
-        else:
-            print(current)
-            if current > result:
-                result = current
-            current = 0
-
-    return result
+from norvig import *
 
 
-def part2(lines):
-    results = []
-    current = 0
+def part1(data):
+    return max(sum(elf) for elf in data)
 
-    for line in lines:
-        if line:
-            current += int(line)
-        else:
-            results.append(current)
-            current = 0
 
+def part2(data):
+    results = [sum(elf) for elf in data]
     return sum(sorted(results, reverse=True)[:3])
 
 
 def main():
-    with open('day01.txt') as input:
-        lines = input.read().split('\n')
-        print(part2(lines))
+    in1 = parse(1, ints, paragraphs)
+    print(part1(in1))
+    print(part2(in1))
 
 
 if __name__ == '__main__':
